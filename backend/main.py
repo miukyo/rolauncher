@@ -133,7 +133,7 @@ def run_gui():
     # Check for updates on exit
     print("\nChecking for updates...")
     try:
-        GITHUB_REPO = "yourusername/rolauncher"  # Replace with your actual repo
+        GITHUB_REPO = "miukyo/rolauncher"  # Replace with your actual repo
         updater = Updater(GITHUB_REPO)
         update_info = updater.check_for_updates()
 
