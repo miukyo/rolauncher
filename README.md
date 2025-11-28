@@ -60,6 +60,14 @@ Yeah, that's it. If it doesn't work, check if you have Python and Node.js instal
 
 MIT probably? I honestly just want people to use this if it helps them.
 
+## 🔒 Security
+
+**"But what about my account cookies?!"**
+
+Relax. Your account cookies are safely encrypted. Like, properly encrypted. Unless you *really* want to decrypt them (and know what you're doing), they're locked up tighter than your high school locker.
+
+So yeah, your accounts are safe. Probably safer than that time you logged into Roblox on your school computer.
+
 ## ⚠️ Disclaimer
 
 This is a hobby project made by someone who just wanted to switch accounts faster. It's not affiliated with Roblox Corporation. Use at your own risk. If it breaks, you get to keep both pieces.
