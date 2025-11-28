@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "DEV=true concurrently --kill-others --names WEBVIEW,VITE \"uv run backend/main.py\" \"vite\"",
-    "build": "tsc -b && vite build && uv run pyinstaller main.spec --noconfirm",
-    "preview": "vite preview"
+    "build": "tsc -b && vite build && uv run pyinstaller main.spec --noconfirm"
   },
   "dependencies": {
     "@fontsource-variable/rubik": "^5.2.8",

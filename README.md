@@ -33,11 +33,25 @@ It's basically Roblox but with extra steps and questionable life choices.
 - Making it actually stable (ambitious, I know)
 - Maybe some proper error handling? Who knows!
 
-## 🛠️ Installation
+## 🛠️ Installation & Building
 
-Good luck! Instructions coming soon™
+### For Normal People
+Just grab the latest release from the releases page and run it. Easy peasy.
 
-(Seriously though, check the releases page or just clone and build it yourself if you're smart enough)
+### For the Smart Souls Who Want to Build It
+```bash
+# Install dependencies (you'll need uv and bun/npm, obviously)
+npm install  # or npm install
+uv pip install -r pyproject.toml
+
+# Development mode (hot reload and all that jazz)
+npm run dev
+
+# Build the whole thing
+npm run build
+```
+
+Yeah, that's it. If it doesn't work, check if you have Python and Node.js installed. And maybe pray a little.
 
 ## 📝 License
 
