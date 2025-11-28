@@ -1,28 +1,53 @@
-## Usage
+# 🚀 RoLauncher
 
-```bash
-$ npm install # or pnpm install or yarn install
-```
+## What is this monstrosity?
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+RoLauncher is a custom Roblox launcher that I threw together because I can :P
+It's basically Roblox but with extra steps and questionable life choices.
 
-## Available Scripts
+## ✨ Features (and I use that term loosely)
 
-In the project directory, you can run:
+- **Account Switcher** - Switch between your army of Roblox accounts faster than you can say "why do I have this many accounts"
+- **Game Shortcuts Per Account** - Pin your favorite games to each account because apparently we're optimizing our Roblox workflow now
+- **It Launches** - Literally the bare minimum. It opens Roblox. Sometimes.
+- **Auto-Updater** - Because who wants to manually update software in 2024?
+- **Fast?** - Well, as fast as it can be, given the circumstances.
 
-### `npm run dev`
+## 🐛 Known Issues (aka "It's not a bug, it's a feature")
 
-Runs the app in the development mode.<br>
-Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+**Short answer:** Yes, there are bugs.
 
-### `npm run build`
+**Long answer:** Oh boy, where do I start? This thing is held together with duct tape, prayers, and whatever I remembered from that one tutorial I watched at 3 AM. Expect:
+- Things to break
+- Things to not work
+- Things to work but in a weird way
+- Your computer to judge you silently
 
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
+## 🚧 Roadmap (Things I'll probably add someday)
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+- More features (TBD when I figure out what else is needed)
+- Bug fixes (lol)
+- Making it actually stable (ambitious, I know)
+- Maybe some proper error handling? Who knows!
 
-## Deployment
+## 🛠️ Installation
 
-Learn more about deploying your application with the [documentations](https://vite.dev/guide/static-deploy.html)
+Good luck! Instructions coming soon™
+
+(Seriously though, check the releases page or just clone and build it yourself if you're brave enough)
+
+## 📝 License
+
+MIT probably? I honestly just want people to use this if it helps them.
+
+## ⚠️ Disclaimer
+
+This is a hobby project made by someone who just wanted to switch accounts faster. It's not affiliated with Roblox Corporation. Use at your own risk. If it breaks, you get to keep both pieces.
+
+## 🤝 Contributing
+
+PRs welcome! Especially if you know what you're doing because I certainly don't.
+
+---
+
+*Made with ☕ and questionable decision-making*

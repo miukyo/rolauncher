@@ -144,7 +144,7 @@ def run_gui():
             print(
                 f"Latest version: {update_info['latest_version']}", flush=True)
             print("\nStarting update process...", flush=True)
-            updater.perform_update(update_info['download_url'], flush=True)
+            updater.perform_update(update_info['download_url'])
         else:
             print("You're running the latest version!", flush=True)
     except Exception as e:

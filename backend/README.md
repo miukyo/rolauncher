@@ -1,3 +1,3 @@
-The `/api` directory is adapted from the [ro-py/ro.py](https://github.com/ro-py/ro.py) project and has been heavily customized to meet the specific requirements of this application. It serves as a Python interface for interacting with Roblox services. Full credit for the original implementation goes to the ro-py team.
+The `/api` directory is adapted from the [ro-py/ro.py](https://github.com/ro-py/ro.py) project and has been heavily modified to meet the specific requirements of this application. It serves as a Python interface for interacting with Roblox services. Full credit for the original implementation goes to the ro-py team.
 
 The `/mapping` directory contains mappings that bridge API functionality to `pywebview` functions, enabling seamless integration with the frontend.

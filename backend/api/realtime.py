@@ -35,6 +35,7 @@ class WebSocketBuilder:
         self.hub_connection.on("notification", self._on_notification)
         self.hub_connection.on("subscriptionStatus",
                                self._on_subscription_status)
+        self.hub_connection.on_error(self._start)
         self.hub_connection.start()
 
     def set_token(self, new_token: str):

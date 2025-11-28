@@ -25,7 +25,7 @@ class Updater:
 
     def get_current_version(self) -> str:
         """Read the current version of app."""
-        return "0.0.00"
+        return "0.0.1"
 
     def get_latest_version_from_github(self) -> Optional[Tuple[str, str]]:
         """
@@ -252,7 +252,8 @@ class Updater:
 
             # Launch the update script and exit the application
             print("Launching update script and closing application...")
-            subprocess.Popen([str(script_path)], shell=True)
+            subprocess.Popen(['cmd.exe', '/c', str(script_path)],
+                             creationflags=subprocess.CREATE_NO_WINDOW)
 
             # Give the script time to start
             import time
