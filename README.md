@@ -1,14 +1,17 @@
-# 🚀 RoLauncher
+<img src="https://raw.githubusercontent.com/miukyo/rolauncher/refs/heads/main/public/logoWhite.png" height="300px" />
+
+# RoLauncher
 
 ## What is this monstrosity?
 
 RoLauncher is a custom Roblox launcher that I threw together because I can :P
+
 It's basically Roblox but with extra steps and questionable life choices.
 
 ## ✨ Features (and I use that term loosely)
 
 - **Account Switcher** - Switch between your army of Roblox accounts faster than you can say "why do I have this many accounts"
-- **Game Shortcuts Per Account** - Pin your favorite games to each account because apparently we're optimizing our Roblox workflow now
+- **Game Shortcuts Per Account** - Make shortcut of your favorite games to each account because apparently we're optimizing our Roblox workflow now :P
 - **It Launches** - Literally the bare minimum. It opens Roblox. Sometimes.
 - **Auto-Updater** - Because who wants to manually update software in 2024?
 - **Fast?** - Well, as fast as it can be, given the circumstances.
@@ -34,7 +37,7 @@ It's basically Roblox but with extra steps and questionable life choices.
 
 Good luck! Instructions coming soon™
 
-(Seriously though, check the releases page or just clone and build it yourself if you're brave enough)
+(Seriously though, check the releases page or just clone and build it yourself if you're smart enough)
 
 ## 📝 License
 
