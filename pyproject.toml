@@ -1,0 +1,18 @@
+[project]
+name = "rolauncher"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pywebview",
+    "pyinstaller",
+    "cryptography",
+    "python-dateutil",
+    "httpx",
+    "signalrcore",
+    "psutil",
+    "winshell",
+    "Pillow",
+    "pywin32",
+]
