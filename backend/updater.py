@@ -24,19 +24,8 @@ class Updater:
         self.version_file_path = self.app_dir / current_version_file
 
     def get_current_version(self) -> str:
-        """Read the current version from VERSION file."""
-        try:
-            if self.version_file_path.exists():
-                with open(self.version_file_path, 'r') as f:
-                    version = f.read().strip()
-                    print(f"Current version: {version}")
-                    return version
-            else:
-                print(f"VERSION file not found at {self.version_file_path}")
-                return "0.0.0"
-        except Exception as e:
-            print(f"Error reading current version: {e}")
-            return "0.0.0"
+        """Read the current version of app."""
+        return "0.0.00"
 
     def get_latest_version_from_github(self) -> Optional[Tuple[str, str]]:
         """
