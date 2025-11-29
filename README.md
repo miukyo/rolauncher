@@ -43,7 +43,7 @@ Just grab the latest release from the releases page and run it. Easy peasy.
 
 ### For the Smart Souls Who Want to Build It
 ```bash
-# Install dependencies (you'll need uv and bun/npm, obviously)
+# Install dependencies (you'll need uv and nodejs, obviously)
 npm install  # or npm install
 uv pip install -r pyproject.toml
 
