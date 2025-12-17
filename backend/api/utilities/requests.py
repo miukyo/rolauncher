@@ -105,8 +105,10 @@ class Requests:
             return value
 
         url = args[0] if args else kwargs.get("url")
-        user_id = self.session.cookies.get(
-            ".ROBLOSECURITY", "")[-16:] if ".ROBLOSECURITY" in self.session.cookies else ""
+        roblosecurity_cookies = [
+            cookie.value for cookie in self.session.cookies.jar if cookie.name == ".ROBLOSECURITY"]
+        user_id = str(
+            hash(roblosecurity_cookies[-1][-16:])) if roblosecurity_cookies else ""
         return (method.lower(), url, frozenset((k, make_hashable(v)) for k, v in kwargs.items()), user_id)
 
     def _get_disk_cache_path(self, cache_key) -> Path:

@@ -69,7 +69,6 @@ class Friends:
                     "image": next(image.image_url for image in images_headshot if image.target_id == friend.id),
                     "imageBust": next(image.image_url for image in images_bust if image.target_id == friend.id)
                 })
-
             return friends
 
         return trio.run(fetch)

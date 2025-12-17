@@ -489,7 +489,6 @@ class UniverseProvider:
                 params={"universeIds": ",".join(map(str, batch))}
             )
             playability_data = playability_response.json()
-
             # Append the results of the current batch
             playability_status.extend({
                 "universe_id": int(item["universeId"]),

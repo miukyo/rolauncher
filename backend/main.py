@@ -21,6 +21,7 @@ from mapping.database import initialize_database, get_last_account, get_account
 
 class Api:
     def __init__(self, client):
+        initialize_database()
         self.client = client
         self.auth = Auth(client)
         self.user = User(client)
@@ -32,6 +33,7 @@ class Api:
 
 class Cli_Api:
     def __init__(self, client):
+        initialize_database()
         self.client = client
         self.auth = Auth(client)
         self.utility = Utility(client, lambda: self.auth)
@@ -40,7 +42,6 @@ class Cli_Api:
 def run_cli(args):
     """Run CLI mode to launch Roblox directly"""
     try:
-        initialize_database()
         token = get_account(args.account_id).get(
             'cookie') if get_account(args.account_id) else None
         if token is None:
@@ -104,12 +105,13 @@ def run_gui():
             if proc.info['name'] and 'RoLauncher' in proc.info['name']:
                 # Another instance is running, just exit
                 print("RoLauncher is already running")
+                warning_msg = "RoLauncher is already running"
+                ctypes.windll.user32.MessageBoxW(
+                    0, warning_msg, "RoLauncher Warning", 0x30)
                 sys.exit(0)
 
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
-
-    initialize_database()
 
     client = api.Client(get_last_account().get('cookie')
                         if get_last_account() else None)

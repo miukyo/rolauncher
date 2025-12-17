@@ -37,7 +37,10 @@ function GameCard(props: { game: Game } & JSX.HTMLAttributes<HTMLDivElement>) {
   const currentTab = NavStore.getTab;
 
   return (
-    <div ref={(el) => (cardRef = el)} class={cn("flex flex-col flex-1", local.class)} {...rest}>
+    <div
+      ref={(el) => (cardRef = el)}
+      class={cn("flex flex-col flex-1 max-w-[340px]", local.class)}
+      {...rest}>
       <Button
         onClick={() => {
           gameTabData[1]({ ref: currentTab(), data: game_data! });

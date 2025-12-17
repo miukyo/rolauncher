@@ -62,7 +62,7 @@ const FriendCard = ({ friend }: { friend: FriendT }) => {
   return (
     <div
       ref={cardRef}
-      class={`flex flex-col p-3 bg-white/10 rounded-3xl min-h-[124px] max-w-[600px] ${
+      class={`flex flex-col p-3 bg-white/10 rounded-3xl min-h-[124px] max-w-[520px] ${
         friend?.presence ? "" : "animate-pulse"
       }`}>
       <Show when={friend?.presence}>

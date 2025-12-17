@@ -149,6 +149,22 @@ class BaseUser(BaseItem):
         )
         friends_data = response.json()["data"]
         online_data = online_response.json()["data"]
+        usernames_response = await self._client.requests.post(
+            url=self._client._url_generator_roproxy.get_url(
+                "apis", f"user-profile-api/v1/user/profiles/get-profiles"),
+            json={"userIds": [friends_data[i]["id"]
+                              for i in range(len(friends_data))], "fields": ["names.combinedName", "names.username"]}
+        )
+        usernames_data = usernames_response.json()["profileDetails"]
+        username_map = {user["userId"]: user for user in usernames_data}
+        for friend in friends_data:
+            friend_id = friend["id"]
+            if friend_id in username_map:
+                friend["name"] = username_map[friend_id]["names"]["username"]
+                friend["displayName"] = username_map[friend_id]["names"]["combinedName"]
+            else:
+                friend["name"] = ""
+                friend["displayName"] = ""
 
         # Create a dictionary for quick lookup of online presence by user ID
         online_presence_map = {user["id"]: user for user in online_data}
@@ -215,7 +231,7 @@ class BaseUser(BaseItem):
         """
         currency_response = await self._client.requests.get(
             url=self._client.url_generator.get_url(
-                "economy", f"v1/users/{self.id}/currency")
+                "economy", f"v1/user/currency")
         )
         currency_data = currency_response.json()
         return currency_data["robux"]
