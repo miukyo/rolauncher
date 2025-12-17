@@ -25,7 +25,7 @@ class Updater:
 
     def get_current_version(self) -> str:
         """Read the current version of app."""
-        return "0.0.1"
+        return "0.0.2"
 
     def get_latest_version_from_github(self) -> Optional[Tuple[str, str]]:
         """

@@ -3,7 +3,7 @@
 ; Non-commercial use only
 
 #define MyAppName "RoLauncher"
-#define MyAppVersion "0.0.1"
+#define MyAppVersion "0.0.2"
 #define MyAppPublisher "miukyo"
 #define MyAppExeName "RoLauncher.exe"
 
