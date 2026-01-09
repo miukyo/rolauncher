@@ -258,16 +258,18 @@ export default function Game() {
   const handleJoin = ({ jobId, privateId }: { jobId?: string; privateId?: string }) => {
     if (!gameData) return;
     NavStore.isLaunchingRoblox[1](true);
-    pywebview.api.utility.launch_roblox(
-      "Play",
-      undefined,
-      gameData.placeId,
-      undefined,
-      jobId ?? undefined,
-      privateId ?? undefined
-    ).then(() => {
-      NavStore.isLaunchingRoblox[1](false);
-    });
+    pywebview.api.utility
+      .launch_roblox(
+        "Play",
+        undefined,
+        gameData.placeId,
+        undefined,
+        jobId ?? undefined,
+        privateId ?? undefined
+      )
+      .then(() => {
+        NavStore.isLaunchingRoblox[1](false);
+      });
   };
 
   return (
@@ -293,7 +295,7 @@ export default function Game() {
                   !gameData?.playability.isPlayable &&
                   gameData?.playability.playabilityStatus !== "PurchaseRequired"
                 }
-                class="bg-blue-500/80 text-xl flex-1 py-4 h-15 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="bg-blue-500/80 text-xl py-4 px-30 h-15 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
                 {gameData?.playability.playabilityStatus === "PurchaseRequired"
                   ? gameData?.price
                   : "Play"}

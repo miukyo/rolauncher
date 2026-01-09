@@ -3,7 +3,7 @@
 ; Non-commercial use only
 
 #define MyAppName "RoLauncher"
-#define MyAppVersion "0.0.2"
+#define MyAppVersion "0.0.3"
 #define MyAppPublisher "miukyo"
 #define MyAppExeName "RoLauncher.exe"
 
@@ -29,7 +29,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
-OutputBaseFilename=RoLauncherInstaller
+OutputBaseFilename=RoLauncherInstaller-v{#MyAppVersion}
 OutputDir={#SourcePath}\dist
 SolidCompression=yes
 WizardStyle=modern dark windows11

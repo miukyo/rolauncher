@@ -42,7 +42,7 @@ const PaginatedSection = <T extends any>(props: {
 
   return (
     <div
-      class={`bg-white/5 rounded-3xl p-6 flex flex-col gap-4 h-fit break-inside-avoid ${
+      class={`bg-white/10 rounded-3xl p-6 flex flex-col gap-4 h-fit break-inside-avoid ${
         props.isLoading ? "opacity-50" : ""
       }`}>
       <div class="flex justify-between items-center">
@@ -432,7 +432,7 @@ export default function Profile() {
                 <div
                   class="p-3 bg-white/10 rounded-2xl flex flex-col gap-2 items-center text-center transition-colors animate-[fadeIn_0.3s_ease-out_forwards] opacity-0 invisible group relative"
                   style={{ "animation-delay": `${index() * 30}ms` }}
-                  title={badge.description}>
+                  >
                   <LazyImage src={badge.imageUrl} class="w-20 h-20 object-contain" />
                   <p class="text-xs font-medium leading-tight line-clamp-2">{badge.name}</p>
                 </div>
@@ -468,10 +468,10 @@ export default function Profile() {
                   <div class="flex gap-3 items-center">
                     <LazyImage src={group.image} class="w-16 h-16 rounded-xl bg-black/20" />
                     <div class="flex-1 overflow-hidden">
-                      <p class="font-bold truncate" title={group.name}>
+                      <p class="font-bold truncate">
                         {group.name}
                       </p>
-                      <p class="text-xs opacity-50 truncate" title={group.role}>
+                      <p class="text-xs opacity-50 truncate">
                         {group.role}
                       </p>
                       <div class="flex items-center gap-1 mt-1 opacity-50">

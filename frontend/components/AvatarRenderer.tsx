@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
+import { createSignal, onMount, onCleanup, Show, createEffect, Suspense } from "solid-js";
 import * as THREE from "three";
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
@@ -26,12 +26,16 @@ export default function AvatarRenderer(props: { userId: number; class?: string }
 
   const [data, setData] = createSignal<ThreeDAvatar | null>(null);
   const [loading, setLoading] = createSignal(true);
+  const [rendered, setRendered] = createSignal(false);
 
   createEffect(async () => {
     try {
       if (!props.userId && loading()) return;
       setLoading(true);
       cleanup();
+
+      // await new Promise((resolve) => setTimeout(resolve, 0));
+
       let d = null;
       while (!d) {
         d = await pywebview.api.user.get_user_3d_avatar(props.userId);
@@ -43,18 +47,20 @@ export default function AvatarRenderer(props: { userId: number; class?: string }
       // console.log("Fetched 3D avatar data:", d);
 
       setData(d);
+
+      if (data() && containerRef) {
+        await initThree(data()!);
+      }
     } catch (e) {
       console.error("Failed to fetch 3D avatar", e);
     } finally {
       setLoading(false);
-      if (data() && containerRef) {
-        initThree(data()!);
-      }
     }
   });
 
   const cleanup = () => {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    setRendered(false);
 
     if (scene) {
       scene.traverse((obj: any) => {
@@ -79,9 +85,12 @@ export default function AvatarRenderer(props: { userId: number; class?: string }
 
   onCleanup(cleanup);
 
-  const initThree = (avatar: ThreeDAvatar) => {
+  const initThree = async (avatar: ThreeDAvatar) => {
     if (!containerRef) return;
     cleanup();
+
+    // await new Promise((resolve) => setTimeout(resolve, 0));
+
     const width = containerRef.clientWidth;
     const height = containerRef.clientHeight;
 
@@ -163,89 +172,73 @@ export default function AvatarRenderer(props: { userId: number; class?: string }
     composer.addPass(outputPass);
 
     // Loader
-    const manager = new THREE.LoadingManager();
-    manager.setURLModifier((url) => {
-      const id = url.split("com/")[1];
-      return get(id);
+    await new Promise<void>((resolve) => {
+      const manager = new THREE.LoadingManager();
+      manager.setURLModifier((url) => {
+        const id = url.split("com/")[1];
+        return get(id);
+      });
+
+      manager.onLoad = () => resolve();
+
+      const mtlLoader = new MTLLoader(manager);
+      mtlLoader.load(
+        avatar.mtl,
+        (materials: any) => {
+          if (renderer !== currentRenderer) return;
+          materials.preload();
+          for (const key in materials.materials) {
+            materials.materials[key].transparent = true;
+            materials.materials[key].alphaMap = null;
+            materials.materials[key].shininess = 0;
+            materials.materials[key].envMap = null;
+          }
+
+          const objLoader = new OBJLoader(manager);
+          objLoader.setMaterials(materials);
+
+          objLoader.load(
+            avatar.obj,
+            (object) => {
+              if (renderer !== currentRenderer) return;
+
+              manager.setURLModifier((url) => {
+                const id = url.split("com/")[1];
+                return get(id);
+              });
+              pivot.add(object);
+
+              // Clone for second pass (Player mesh with torso color)
+              const object2 = object.clone();
+              const torsoMaterial = new THREE.MeshPhongMaterial({
+                color: new THREE.Color("#" + avatar.bodyColors.torsoColor3),
+              });
+
+              // Apply material and filter
+              const playerChildren = object2.children.filter((child) =>
+                child.name.toLowerCase().includes("player")
+              );
+              object2.children = playerChildren;
+
+              object2.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                  child.material = torsoMaterial;
+                }
+              });
+
+              pivot.add(object2);
+            },
+            undefined,
+            (error: unknown) => console.error("Error loading OBJ:", error)
+          );
+        },
+        undefined,
+        (error: unknown) => console.error("Error loading MTL:", error)
+      );
     });
-    const mtlLoader = new MTLLoader(manager);
-    mtlLoader.load(
-      avatar.mtl,
-      (materials: any) => {
-        if (renderer !== currentRenderer) return;
-        materials.preload();
-        for (const key in materials.materials) {
-          materials.materials[key].transparent = true;
-          materials.materials[key].alphaMap = null;
-          materials.materials[key].shininess = 0;
-          materials.materials[key].envMap = null;
-        }
 
-        const objLoader = new OBJLoader(manager);
-        objLoader.setMaterials(materials);
-
-        objLoader.load(
-          avatar.obj,
-          (object) => {
-            if (renderer !== currentRenderer) return;
-
-            manager.setURLModifier((url) => {
-              const id = url.split("com/")[1];
-              return get(id);
-            });
-            pivot.add(object);
-            // pivot.position.set(0, 0, 0);
-          },
-          undefined,
-          (error: unknown) => console.error("Error loading OBJ:", error)
-        );
-      },
-      undefined,
-      (error: unknown) => console.error("Error loading MTL:", error)
-    );
-
-    const mtlLoader2 = new MTLLoader(manager);
-    mtlLoader2.load(
-      avatar.mtl,
-      (materials: any) => {
-        if (renderer !== currentRenderer) return;
-        materials.preload();
-        for (const key in materials.materials) {
-          materials.materials[key] = new THREE.MeshPhongMaterial({
-            color: new THREE.Color("#" + avatar.bodyColors.torsoColor3),
-          });
-        }
-
-        const objLoader = new OBJLoader(manager);
-        objLoader.setMaterials(materials);
-
-        objLoader.load(
-          avatar.obj,
-          (object) => {
-            if (renderer !== currentRenderer) return;
-
-            manager.setURLModifier((url) => {
-              const id = url.split("com/")[1];
-              return get(id);
-            });
-            pivot.add(object);
-            object.children = object.children.filter((child) => {
-              const name = child.name.toLowerCase();
-              return name.includes("player");
-            });
-            // object.scale.set(0.99, 0.99, 0.99);
-            // pivot.position.set(0, 0, 0);
-            // pivot.position.set(avatar.aabb.min.x, avatar.aabb.min.y, avatar.aabb.min.z);
-            // pivot.rotation.y = Math.PI;
-            // pivot.scale.setScalar(2);
-          },
-          undefined,
-          (error: unknown) => console.error("Error loading OBJ:", error)
-        );
-      },
-      undefined,
-      (error: unknown) => console.error("Error loading MTL:", error)
-    );
+    renderer.compile(scene, camera);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
@@ -254,11 +247,15 @@ export default function AvatarRenderer(props: { userId: number; class?: string }
       composer.render();
     };
     animate();
+    setRendered(true);
   };
 
   return (
     <Show when={data()}>
-      <div ref={containerRef} class={props.class} />
+      <div
+        ref={containerRef}
+        class={` ${rendered() ? "animate-[fadeIn_0.3s_ease-out_forwards] " : " "} ${props.class}`}
+      />
     </Show>
   );
 }
