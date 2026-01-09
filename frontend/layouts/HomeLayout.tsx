@@ -63,10 +63,17 @@ export default function HomeLayout({ children }: { children: JSX.Element }) {
           <p class="text-[10px] opacity-50 mt-4 h-5">Switching account...</p>
         </div>
       </Show>
+
+      <Show when={NavStore.isLaunchingRoblox[0]()}>
+        <div class="fixed z-1000 inset-0 size-full bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center">
+          <img src="loadingIcon.png" alt="Loading Icon" class="size-12 animate-spin opacity-30" />
+          <p class="text-[10px] opacity-50 mt-4 h-5">Launching Roblox...</p>
+        </div>
+      </Show>
       <TransImage
         class="absolute w-screen opacity-30 h-screen blur-[5rem]"
-        // src={NavStore.backgroundImage[0]()}
-        src="test.jpg"
+        src={NavStore.backgroundImage[0]() || "test.jpg"}
+        // src="test.jpg"
         alt="background"
       />
       <div

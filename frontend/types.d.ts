@@ -39,6 +39,36 @@ type Game = {
   };
 };
 
+type ThreeDVector3 = {
+  x: number;
+  y: number;
+  z: number;
+};
+
+type ThreeDAvatar = {
+  obj: string;
+  mtl: string;
+  textures: string[];
+  camera: {
+    position: ThreeDVector3;
+    direction: ThreeDVector3;
+    fov: number;
+  };
+  aabb: {
+    min: ThreeDVector3;
+    max: ThreeDVector3;
+  };
+  bodyColors: {
+    headColor3: string;
+    torsoColor3: string;
+    leftArmColor3: string;
+    rightArmColor3: string;
+    leftLegColor3: string;
+    rightLegColor3: string;
+    bodyColor3: string;
+  };
+};
+
 type FriendT = {
   id: number;
   name: string;
@@ -121,6 +151,51 @@ declare const pywebview: {
       }>;
 
       search_users(query: string, page_size?: number): Promise<Array<FriendT>>;
+      get_user_info(user_id?: number): Promise<{
+        id: number;
+        name: string;
+        displayName: string;
+        image: string;
+        friendStatus: "Friends" | "NotFriends" | "RequestSent" | "RequestReceived" | "Self";
+        presence: {
+          type: string;
+          place: number | null;
+          universe: number | null;
+          job: number | null;
+          lastLocation: string | null;
+        } | null;
+      }>;
+      get_user_groups(user_id?: number): Promise<
+        Array<{
+          id: number;
+          name: string;
+          memberCount: number;
+          rank: number;
+          role: string;
+          image: string;
+        }>
+      >;
+      get_user_badges(user_id?: number): Promise<
+        Array<{
+          id: number;
+          name: string;
+          description: string;
+          imageUrl: string;
+        }>
+      >;
+      get_user_social_links(user_id?: number): Promise<{
+        facebook?: string;
+        twitter?: string;
+        youtube?: string;
+        twitch?: string;
+        guilded?: string;
+      }>;
+      get_user_creations(user_id?: number): Promise<Array<Game>>;
+      get_user_favorites(user_id?: number): Promise<Array<Game>>;
+      get_user_3d_avatar(user_id: number): Promise<ThreeDAvatar | null>;
+      get_user_friends(user_id?: number): Promise<Array<FriendT>>;
+      get_user_followers(user_id?: number): Promise<Array<FriendT>>;
+      get_user_following(user_id?: number): Promise<Array<FriendT>>;
     };
     friends: {
       get_authed_friends(iterate: [number, number]): Promise<Array<FriendT>>;

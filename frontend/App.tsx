@@ -2,13 +2,14 @@ import "@/App.css";
 import Home from "@/views/Home";
 import UserStore from "./stores/UserStore";
 import Login from "./views/Login";
-import { createEffect, createSignal, Match, onMount, Show, Switch } from "solid-js";
+import { createEffect, createSignal, Match, onMount, Show, Switch, useTransition } from "solid-js";
 import { Motion, Presence } from "solid-motionone";
 import Friends from "./views/Friends";
 import NavStore from "./stores/NavStore";
 import HomeLayout from "./layouts/HomeLayout";
 import Game from "./views/Game";
 import Search from "./views/Search";
+import Profile from "./views/Profile";
 
 function LoginOrHome() {
   const [isLoginLoading] = UserStore.isLoginLoading;
@@ -21,81 +22,60 @@ function LoginOrHome() {
   const [gameFav, setGameFav] = UserStore.gameFav;
   const [showHome, setShowHome] = createSignal(false);
 
-  createEffect(async () => {
-    if (isDataAvailable()) {
-      setShowHome(true);
-      return;
+  onMount(async () => {
+    if (!isDataAvailable()) {
+      await UserStore.initializeStorageStore();
     }
-    await UserStore.initializeStorageStore();
+
     if (!isLoginLoading() && isDataAvailable()) {
       setShowHome(true);
+
+      if (user().id && isApiAvailable()) {
+        try {
+          if (friends().length === 0) {
+            const friends_data = await pywebview.api.friends.get_authed_friends([0, 1000]);
+            setFriends(
+              friends_data.map((friend) => ({
+                ...friend,
+                followersCount: 0,
+                followingCount: 0,
+                friendCount: 0,
+                isFollowersFetched: false,
+              }))
+            );
+          }
+
+          if (gameCont().length === 0) {
+            const data = await pywebview.api.games.get_authed_continue(15);
+            setGameCont(data);
+            NavStore.backgroundImage[1]((data[0]?.thumbnailUrl[0] ?? "test.jpg") as string);
+          }
+
+          if (gameFav().length === 0) {
+            const data = await pywebview.api.games.get_authed_favorites(50);
+            setGameFav(data);
+          }
+
+          if (gameRecs().length === 0) {
+            const data = await pywebview.api.games.get_authed_recommendations(50);
+            setGameRecs(data);
+
+            for (let i = 1; i < 6; i++) {
+              try {
+                const page = await pywebview.api.games.get_authed_recommendations_page(i + 1);
+                setGameRecs((prev) => [...prev, ...page.flat()]);
+              } catch (error) {
+                console.error(`Failed to fetch page ${i + 1}:`, error);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("An error occurred while fetching data:", error);
+        }
+      }
     } else {
       console.log("User not logged in");
       setShowHome(false);
-    }
-  });
-
-  createEffect(() => {
-    if (user().id && friends().length === 0 && isApiAvailable() && isDataAvailable()) {
-      pywebview.api.friends
-        .get_authed_friends([0, 1000])
-        .then((friends_data) => {
-          setFriends(
-            friends_data.map((friend) => ({
-              ...friend,
-              followersCount: 0,
-              followingCount: 0,
-              friendCount: 0,
-              isFollowersFetched: false,
-            }))
-          );
-        })
-        .catch((error) => console.error("Failed to fetch friends:", error));
-    }
-  });
-
-  createEffect(() => {
-    if (user().id && gameCont().length === 0 && isApiAvailable() && isDataAvailable()) {
-      pywebview.api.games
-        .get_authed_continue(15)
-        .then((data) => {
-          setGameCont(data);
-          NavStore.backgroundImage[1]((data[0]?.thumbnailUrl[0] ?? "test.jpg") as string);
-        })
-        .catch((error) => console.error("Failed to fetch continue games:", error));
-    }
-  });
-
-  createEffect(() => {
-    if (user().id && gameFav().length === 0 && isApiAvailable() && isDataAvailable()) {
-      pywebview.api.games
-        .get_authed_favorites(50)
-        .then((data) => {
-          setGameFav(data);
-        })
-        .catch((error) => console.error("Failed to fetch favorite games:", error));
-    }
-  });
-
-  createEffect(() => {
-    if (user().id && gameRecs().length === 0 && isApiAvailable() && isDataAvailable()) {
-      UserStore.isFetchingGames[1](true);
-      pywebview.api.games
-        .get_authed_recommendations(50)
-        .then((data) => {
-          setGameRecs(data);
-        })
-        .catch((error) => console.error("Failed to fetch recommendations:", error));
-
-      for (let i = 1; i < 6; i++) {
-        pywebview.api.games
-          .get_authed_recommendations_page(i + 1)
-          .then((page) => setGameRecs((prev) => [...prev, ...page.flat()]))
-          .catch((error) => console.error(`Failed to fetch page ${i + 1}:`, error));
-      }
-
-      // idk why im placing it here but whatever :P
-      UserStore.isFetchingGames[1](false);
     }
   });
 
@@ -144,32 +124,18 @@ function LoginOrHome() {
     };
   });
 
-  return isDataAvailable() ? (
-    <Home />
-  ) : (
+  return (
     <>
       <Presence>
-        <Show when={!showHome()}>
-          <Motion
-            initial={{ opacity: 1, filter: "blur(0)", scale: 1 }}
-            exit={{ opacity: 0, filter: "blur(100px)", scale: 2 }}
-            transition={{ duration: 1, easing: "ease-out" }}
-            class="fixed w-full h-full top-0 left-0 will-change-transform z-100">
+        <Switch>
+          <Match when={!showHome() && !isDataAvailable()}>
             <Login />
-          </Motion>
-        </Show>
-      </Presence>
+          </Match>
 
-      <Presence>
-        <Show when={showHome()}>
-          <Motion
-            initial={{ opacity: 0, filter: "blur(50px)", scale: 0.8 }}
-            animate={{ opacity: 1, filter: "blur(0)", scale: 1 }}
-            transition={{ duration: 0.5, easing: [0.34, 1.56, 0.64, 1] }}
-            class="relative w-full h-full top-0 left-0 will-change-transform">
+          <Match when={showHome() && isDataAvailable()}>
             <Home />
-          </Motion>
-        </Show>
+          </Match>
+        </Switch>
       </Presence>
     </>
   );
@@ -191,6 +157,9 @@ function App() {
           </Match>
           <Match when={NavStore.getTab() === "Search"}>
             <Search />
+          </Match>
+          <Match when={NavStore.getTab() === "User"}>
+            <Profile />
           </Match>
         </Switch>
       </HomeLayout>

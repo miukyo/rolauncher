@@ -1,10 +1,6 @@
-import Button from "@/components/Button";
 import FriendCard from "@/components/FriendCard";
-import { DotsIcon } from "@/components/icons/DotsIcon";
-import { PlayCircleIcon } from "@/components/icons/PlayCircleIcon";
-import LazyImage from "@/components/LazyImage";
 import UserStore from "@/stores/UserStore";
-import { createEffect, For, Index, onCleanup, onMount, Show } from "solid-js";
+import { For, Show } from "solid-js";
 
 export default function Friends() {
   const [friends] = UserStore.friends;

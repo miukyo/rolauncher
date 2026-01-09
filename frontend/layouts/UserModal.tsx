@@ -6,6 +6,7 @@ import { WrenchIcon } from "@/components/icons/WrenchIcon";
 import LazyImage from "@/components/LazyImage";
 import UserStore from "@/stores/UserStore";
 import { createEffect, createSignal, Show } from "solid-js";
+import NavStore from "@/stores/NavStore";
 
 export default function UserModal(props: { data?: any; [key: string]: any }) {
   const [open, setOpen] = createSignal(false);
@@ -64,14 +65,12 @@ export default function UserModal(props: { data?: any; [key: string]: any }) {
 
   const handleJoin = () => {
     if (!props.data) return;
-    pywebview.api.utility.launch_roblox(
-      "Play",
-      undefined,
-      undefined,
-      props.data?.id,
-      undefined,
-      undefined
-    );
+    NavStore.isLaunchingRoblox[1](true);
+    pywebview.api.utility
+      .launch_roblox("Play", undefined, undefined, props.data?.id, undefined, undefined)
+      .then(() => {
+        NavStore.isLaunchingRoblox[1](false);
+      });
   };
 
   return (

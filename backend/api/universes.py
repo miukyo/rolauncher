@@ -281,12 +281,16 @@ class UniverseProvider:
                     "games", "v1/games"),
                 params={"universeIds": ",".join(map(str, batch))},
             )
-            universes_data = universes_response.json()["data"]
+            universes_data = universes_response.json()
+            if "data" not in universes_data:
+                raise Exception(
+                    f"Error fetching universes: {universes_data.get('errors', [{}])[0].get('message', 'Unknown error')}"
+                )
 
             # Append the results of the current batch
             all_universes.extend(
                 Universe(client=self._client, data=universe_data)
-                for universe_data in universes_data
+                for universe_data in universes_data["data"]
             )
 
         return all_universes
@@ -482,13 +486,17 @@ class UniverseProvider:
         # Process universe_ids in chunks of 50
         for i in range(0, len(universe_ids), 50):
             batch = universe_ids[i:i + 50]
-            playability_response = await self._client.requests.get(
+            playability_response = await self._client.requests.cache_get(
                 url=self._client.url_generator.get_url(
                     "games", f"v1/games/multiget-playability-status"
                 ),
-                params={"universeIds": ",".join(map(str, batch))}
+                params={"universeIds": ",".join(map(str, batch))},
             )
             playability_data = playability_response.json()
+            if not isinstance(playability_data, list):
+                raise Exception(
+                    f"Error fetching playability status: {playability_data.get('errors', [{}])[0].get('message', 'Unknown error')}"
+                )
             # Append the results of the current batch
             playability_status.extend({
                 "universe_id": int(item["universeId"]),

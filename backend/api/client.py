@@ -45,7 +45,7 @@ class Client:
         badges: The badge provider object.
     """
 
-    def __init__(self, token: str = None, base_url: str = "roblox.com", ws_url: str = "realtime-signalr.roblox.com/userhub", enable_websocket: bool = True):
+    def __init__(self, token: str = None, base_url: str = "roproxy.com", ws_url: str = "realtime-signalr.roblox.com/userhub", enable_websocket: bool = True):
         """
         Arguments:
             token: A .ROBLOSECURITY token to authenticate the client with.

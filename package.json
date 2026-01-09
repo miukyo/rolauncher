@@ -12,13 +12,15 @@
     "@kobalte/core": "^0.13.11",
     "@solidjs/router": "^0.15.4",
     "@tailwindcss/vite": "^4.1.17",
+    "@types/three": "^0.182.0",
     "clsx": "^2.1.1",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-solid": "^8.6.0",
     "solid-js": "^1.9.10",
     "solid-motionone": "^1.0.4",
     "tailwind": "^4.0.0",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",

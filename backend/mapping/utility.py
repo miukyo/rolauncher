@@ -67,12 +67,16 @@ class Utility:
             else:
                 # Handle case where no specific parameters are provided for Play
                 # This branch is implicit in the original JS but good to have
-                raise ValueError("Insufficient parameters for 'Play' mode.")
+                print("Insufficient parameters for 'Play' mode")
+                return False
+                # raise ValueError("Insufficient parameters for 'Play' mode.")
 
             encoded_url = urllib.parse.quote(place_launcher_url)
 
             if not ticket:
-                raise Exception("Failed to get authentication ticket")
+                print("Failed to get authentication ticket")
+                return False
+                # raise Exception("Failed to get authentication ticket")
 
             final_uri = (
                 f"{base_uri}+launchmode:play+launchtime:{timestamp}+"
@@ -88,7 +92,7 @@ class Utility:
                 for proc in psutil.process_iter(['name']):
                     if proc.info['name'] == 'RobloxPlayerBeta.exe':
                         for window in webview.windows:
-                            window.minimize()
+                            window.destroy()
                         return True
                 time.sleep(0.5)
             return False

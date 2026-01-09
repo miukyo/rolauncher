@@ -55,7 +55,8 @@ class Presence:
         """
         self._client: Client = client
 
-        self.user_presence_type: PresenceType = PresenceType(data["userPresenceType"])
+        self.user_presence_type: PresenceType = PresenceType(
+            data["userPresenceType"])
         self.last_location: str = data["lastLocation"]
 
         self.place: Optional[BasePlace] = BasePlace(
@@ -68,7 +69,8 @@ class Presence:
             place_id=data["rootPlaceId"]
         ) if data.get("rootPlaceId") else None
 
-        self.job: Optional[BaseJob] = BaseJob(self._client, data["gameId"]) if data.get("gameId") else None
+        self.job: Optional[BaseJob] = BaseJob(
+            self._client, data["gameId"]) if data.get("gameId") else None
 
         self.universe: Optional[BaseUniverse] = BaseUniverse(
             client=client,
@@ -102,10 +104,15 @@ class PresenceProvider:
         """
 
         presences_response = await self._client.requests.post(
-            url=self._client.url_generator.get_url("presence", "v1/presence/users"),
+            url=self._client.url_generator.get_url(
+                "presence", "v1/presence/users"),
             json={
                 "userIds": list(map(int, users))
             }
         )
-        presences_data = presences_response.json()["userPresences"]
+        try:
+            presences_data = presences_response.json().get("userPresences", [])
+        except ValueError:
+            raise ValueError(
+                "Invalid JSON response received from the presence endpoint.")
         return [Presence(client=self._client, data=presence_data) for presence_data in presences_data]

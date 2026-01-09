@@ -1,5 +1,3 @@
-import os
-import sys
 import requests
 import zipfile
 import tempfile
@@ -250,17 +248,18 @@ class Updater:
                 shutil.rmtree(temp_dir, ignore_errors=True)
                 return False
 
-            # Launch the update script and exit the application
-            print("Launching update script and closing application...")
-            subprocess.Popen(['cmd.exe', '/c', str(script_path)],
-                             creationflags=subprocess.CREATE_NO_WINDOW)
+            # Schedule the update script to run after the application exits
+            print("Update script will run after application exits.")
 
-            # Give the script time to start
-            import time
-            time.sleep(1)
+            def launch_update_script():
+                subprocess.Popen(['cmd.exe', '/c', str(script_path)],
+                                 creationflags=subprocess.CREATE_NO_WINDOW)
 
-            # Exit the application
-            sys.exit(0)
+            # Register the script to run on exit
+            import atexit
+            atexit.register(launch_update_script)
+
+            return True
 
         except Exception as e:
             print(f"Error performing update: {e}")

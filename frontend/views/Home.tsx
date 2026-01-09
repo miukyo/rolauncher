@@ -1,4 +1,4 @@
-import { createSignal, For, Index, Show, onCleanup, onMount } from "solid-js";
+import { createSignal, For, Index, Show, onCleanup, onMount, createEffect } from "solid-js";
 import UserStore from "@/stores/UserStore";
 import GameCard from "@/components/GameCard";
 import createEmblaCarousel from "embla-carousel-solid";
@@ -19,10 +19,9 @@ function Home() {
   const [gameRecs] = UserStore.gameRecs;
   const [gameCont] = UserStore.gameCont;
   const [gameFav] = UserStore.gameFav;
-  const [isFetchingGames] = UserStore.isFetchingGames;
 
   const backgroundImage = NavStore.backgroundImage;
-  onMount(() => {
+  createEffect(() => {
     const api = continueCarouselApi();
     if (api) {
       const handleSelect = () => {
@@ -52,16 +51,28 @@ function Home() {
             class="embla overflow-hidden mask-l-from-[calc(100%-60px)] mask-r-from-[calc(100%-60px)]">
             <div class="flex gap-3 py-2 items-center embla__container">
               <Index each={friends().length === 0 ? [...Array(15)] : friends().slice(0, 15)}>
-                {(friend, i) => (
-                  <UserModal
-                    data={friend()}
-                    class={`relative ${i === 0 ? "ml-14!" : ""} ${
+                {(friend,i) => (
+                  <div  class={`relative ${i === 0 ? "ml-14!" : ""} ${
                       i === 14 ? "mr-14!" : ""
                     } group embla__slide flex-[0_0_auto] max-w-full`}>
                     <Button
                       class={`bg-white/10 rounded-2xl p-0 overflow-hidden size-30 shrink-0 group-hover:scale-105 group-hover:outline-white/50! ${
                         friend() ? "" : "animate-pulse"
-                      }`}>
+                      }`}
+                      onClick={() => {
+                        NavStore.userTabData[1]({
+                          ref: NavStore.getTab(),
+                          userId: friend().id,
+                          initialData: {
+                            name: friend().name,
+                            displayName: friend().displayName,
+                            image: friend().image,
+                            friendStatus: friend().friendStatus,
+                            presence: friend().presence,
+                          },
+                        });
+                        NavStore.goTo("User");
+                      }}>
                       <Show when={friend()}>
                         <LazyImage
                           src={friend()?.image !== "" ? friend()?.image : "error.svg"}
@@ -88,14 +99,14 @@ function Home() {
                       {friend()?.presence.type === "in_game" ? friend()?.presence.lastLocation : ""}
                       {friend()?.presence.type === "in_studio" ? "In Studio" : ""}
                     </p>
-                  </UserModal>
+                  </div>
                 )}
               </Index>
             </div>
           </div>
         </div>
         {/* continue */}
-        <Show when={gameCont().length > 0 || isFetchingGames()}>
+        <Show when={gameCont().length > 0}>
           <div class="flex items-center gap-4 ml-14 h-80">
             <p class="font-bold text-6xl text-nowrap z-20">
               Jump <br /> back in!
@@ -106,8 +117,7 @@ function Home() {
               ref={continueCarouselRef}
               class="embla overflow-hidden  -ml-50 mask-l-from-[calc(100%-20vw)] mask-r-from-[calc(100%-40vw)] flex-1 h-full">
               <div class="flex gap-3 p-10 embla__container items-center">
-                <For
-                  each={gameCont().length === 0 || isFetchingGames() ? [...Array(10)] : gameCont()}>
+                <For each={gameCont().length === 0 ? [...Array(10)] : gameCont()}>
                   {(game, i) => (
                     <GameCard
                       class={`shrink-0 flex-[0_0_auto] w-80 embla__slide transition-[scale,margin,outline] duration-500 ease-out
@@ -128,14 +138,14 @@ function Home() {
           </div>
         </Show>
         {/* fav */}
-        <Show when={gameFav().length > 0 || isFetchingGames()}>
+        <Show when={gameFav().length > 0}>
           <p class="ml-14 mt-5 -mb-2 text-xl opacity-50">Favorites</p>
           <div
             class="grid gap-3 px-14 mb-10"
             style={{
               "grid-template-columns": "repeat(auto-fit, minmax(250px, 1fr))",
             }}>
-            <For each={gameFav().length === 0 || isFetchingGames() ? [...Array(6)] : gameFav()}>
+            <For each={gameFav().length === 0 ? [...Array(6)] : gameFav()}>
               {(game) => <GameCard game={game} />}
             </For>
           </div>

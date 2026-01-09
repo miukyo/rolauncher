@@ -1,3 +1,11 @@
+from mapping.database import initialize_database, get_last_account, get_account
+from mapping.games import Games
+from mapping.friends import Friends
+from mapping.user import User
+from mapping.auth import Auth
+from mapping.utility import Utility
+from updater import Updater
+from mapping.realtime import Realtime
 import os
 import sys
 import argparse
@@ -7,20 +15,13 @@ import ctypes
 import psutil
 import threading
 import time
-
-
-from mapping.realtime import Realtime
-from updater import Updater
-from mapping.utility import Utility
-from mapping.auth import Auth
-from mapping.user import User
-from mapping.friends import Friends
-from mapping.games import Games
-from mapping.database import initialize_database, get_last_account, get_account
+import subprocess
 
 
 class Api:
-    def __init__(self, client):
+    def __init__(self):
+        client = api.Client(get_last_account().get('cookie')
+                            if get_last_account() else None)
         initialize_database()
         self.client = client
         self.auth = Auth(client)
@@ -67,72 +68,15 @@ def run_cli(args):
         sys.exit(1)
 
 
-def monitor_roblox_process():
-    """Monitor Roblox process and show window when it closes"""
-    roblox_was_running = False
-
-    while True:
-        roblox_running = False
-        for proc in psutil.process_iter(['name']):
-            try:
-                if proc.info['name'] == 'RobloxPlayerBeta.exe':
-                    roblox_running = True
-                    roblox_was_running = True
-                    break
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                pass
-
-        # If Roblox was running but now it's not, show the window
-        if roblox_was_running and not roblox_running:
-            for window in webview.windows:
-                window.restore()
-            roblox_was_running = False
-
-        time.sleep(1)
+def is_roblox_running():
+    for proc in psutil.process_iter(['name']):
+        if proc.info['name'] == 'RobloxPlayerBeta.exe':
+            return True
+    return False
 
 
-def run_gui():
-    """Run GUI mode with webview"""
-    # Check if RoLauncher is already running
-    current_pid = os.getpid()
-    for proc in psutil.process_iter(['pid', 'name']):
-        try:
-            # Skip current process
-            if proc.info['pid'] == current_pid:
-                continue
-
-            # Check if it's another RoLauncher process
-            if proc.info['name'] and 'RoLauncher' in proc.info['name']:
-                # Another instance is running, just exit
-                print("RoLauncher is already running")
-                warning_msg = "RoLauncher is already running"
-                ctypes.windll.user32.MessageBoxW(
-                    0, warning_msg, "RoLauncher Warning", 0x30)
-                sys.exit(0)
-
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
-
-    client = api.Client(get_last_account().get('cookie')
-                        if get_last_account() else None)
-
-    dev_mode = os.getenv('DEV', 'false').lower() == 'true'
-    url = 'localhost:5173' if dev_mode else 'index.html'
-
-    window = webview.create_window('RoLauncher', url, js_api=Api(client
-                                                                 ), min_size=(1000, 600), background_color="#171717")
-
-    def bind_events():
-        """Bind events after the window is ready"""
-        # Start Roblox monitoring in background thread
-        monitor_thread = threading.Thread(
-            target=monitor_roblox_process, daemon=True)
-        monitor_thread.start()
-
-    webview.start(func=bind_events, private_mode=True,
-                  debug=dev_mode, http_server=False)
-
-    # Check for updates on exit
+def check_for_updates():
+    """Check for updates in a background thread."""
     print("\nChecking for updates...")
     try:
         GITHUB_REPO = "miukyo/rolauncher"  # Replace with your actual repo
@@ -153,11 +97,67 @@ def run_gui():
         print(f"Update check failed: {e}", flush=True)
 
 
+def _start_webview():
+    """Start the webview window (Child Process)"""
+    dev_mode = os.getenv('DEV', 'false').lower() == 'true'
+    url = 'localhost:5173' if dev_mode else 'index.html'
+
+    window = webview.create_window('RoLauncher', url, js_api=Api(
+    ), min_size=(1000, 600), background_color="#171717")
+
+    def bind_events():
+        """Bind events after the window is ready."""
+        # Start update check in background thread
+        update_thread = threading.Thread(target=check_for_updates, daemon=True)
+        update_thread.start()
+
+    webview.start(func=bind_events,
+                  debug=dev_mode, http_server=False)
+
+
+def run_gui():
+    """Run GUI mode supervisor."""
+    # Check if RoLauncher is already running
+    current_pid = os.getpid()
+    for proc in psutil.process_iter(['pid', 'name']):
+        try:
+            # Skip current process
+            if proc.info['pid'] == current_pid:
+                continue
+
+            # Check if it's another RoLauncher process
+            if proc.info['name'] and 'RoLauncher' in proc.info['name']:
+                # Another instance is running, just exit
+                print("RoLauncher is already running")
+                warning_msg = "RoLauncher is already running"
+                ctypes.windll.user32.MessageBoxW(
+                    0, warning_msg, "RoLauncher Warning", 0x30)
+                sys.exit(0)
+
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+
+    while True:
+        if getattr(sys, 'frozen', False):
+             cmd = [sys.executable, '--internal-gui']
+        else:
+             cmd = [sys.executable, sys.argv[0], '--internal-gui']
+
+        subprocess.run(cmd)
+
+        if is_roblox_running():
+            while is_roblox_running():
+                time.sleep(1)
+        else:
+            break
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='RoLauncher - Launch Roblox games')
     parser.add_argument('--cli', action='store_true',
                         help='Run in CLI mode (no GUI)')
+    parser.add_argument('--internal-gui', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--account-id', type=int,
                         help='Account ID to use for launching')
     parser.add_argument(
@@ -173,5 +173,7 @@ if __name__ == '__main__':
 
     if args.cli:
         run_cli(args)
+    elif args.internal_gui:
+        _start_webview()
     else:
         run_gui()

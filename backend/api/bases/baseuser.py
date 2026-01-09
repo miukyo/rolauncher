@@ -143,12 +143,8 @@ class BaseUser(BaseItem):
             url=self._client._url_generator_roproxy.get_url(
                 "friends", f"v1/users/{self.id}/friends"),
         )
-        online_response = await self._client.requests.get(
-            url=self._client._url_generator_roproxy.get_url(
-                "friends", f"v1/users/{self.id}/friends/online"),
-        )
         friends_data = response.json()["data"]
-        online_data = online_response.json()["data"]
+
         usernames_response = await self._client.requests.post(
             url=self._client._url_generator_roproxy.get_url(
                 "apis", f"user-profile-api/v1/user/profiles/get-profiles"),
@@ -166,37 +162,29 @@ class BaseUser(BaseItem):
                 friend["name"] = ""
                 friend["displayName"] = ""
 
-        # Create a dictionary for quick lookup of online presence by user ID
-        online_presence_map = {user["id"]: user for user in online_data}
+        # Fetch presences using the public presence endpoint
+        friend_ids = [friend["id"] for friend in friends_data]
+        presences = await self._client.presence.get_user_presences(friend_ids)
+        presence_map = {p.user.id: p for p in presences}
 
         # Add presence information to friends data
         for friend in friends_data:
             friend_id = friend["id"]
-            if friend_id in online_presence_map:
-                presence = online_presence_map[friend_id]["userPresence"]
-                presence_type_mapping = {
-                    "Offline": 0,
-                    "Online": 1,
-                    "InGame": 2,
-                    "InStudio": 3
-                }
+            if friend_id in presence_map:
+                friend["presence"] = presence_map[friend_id]
 
-                place_id = presence.get("placeId")
-                root_place_id = presence.get("rootPlaceId")
-                game_instance_id = presence.get("gameInstanceId")
-                universe_id = presence.get("universeId")
-
-                friend["presence"] = Presence(
-                    self._client, {
-                        "userId": friend_id,
-                        "userPresenceType": presence_type_mapping.get(presence.get("UserPresenceType"), 0),
-                        "lastLocation": presence.get("lastLocation"),
-                        "placeId": place_id,
-                        "rootPlaceId": root_place_id,
-                        "gameId": game_instance_id,
-                        "universeId": universe_id,
-                    })
-                friend["sortScore"] = online_presence_map[friend_id]["sortScore"]
+                # Calculate sort score manually
+                ptype = friend["presence"].user_presence_type.value
+                # 2=InGame, 3=Studio, 1=Online, 0=Offline
+                if ptype == 2:
+                    score = 30
+                elif ptype == 3:
+                    score = 20
+                elif ptype == 1:
+                    score = 10
+                else:
+                    score = 0
+                friend["sortScore"] = score
             else:
                 friend["presence"] = Presence(
                     self._client, {
@@ -233,7 +221,12 @@ class BaseUser(BaseItem):
             url=self._client.url_generator.get_url(
                 "economy", f"v1/user/currency")
         )
-        currency_data = currency_response.json()
+
+        try:
+            currency_data = currency_response.json()
+        except:
+            return 0
+
         return currency_data["robux"]
 
     async def has_premium(self) -> bool:
@@ -334,7 +327,7 @@ class BaseUser(BaseItem):
         """
         from ..roles import Role
         from ..groups import Group
-        roles_response = await self._client.requests.get(
+        roles_response = await self._client.requests.cache_get(
             url=self._client.url_generator.get_url(
                 "groups", f"v1/users/{self.id}/groups/roles")
         )
@@ -358,7 +351,7 @@ class BaseUser(BaseItem):
             A list of Roblox badges.
         """
 
-        badges_response = await self._client.requests.get(
+        badges_response = await self._client.requests.cache_get(
             url=self._client.url_generator.get_url(
                 "accountinformation", f"v1/users/{self.id}/roblox-badges")
         )
@@ -372,7 +365,7 @@ class BaseUser(BaseItem):
         Returns:
             The user's promotion channels.
         """
-        channels_response = await self._client.requests.get(
+        channels_response = await self._client.requests.cache_get(
             url=self._client.url_generator.get_url(
                 "accountinformation", f"v1/users/{self.id}/promotion-channels")
         )

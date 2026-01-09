@@ -99,17 +99,35 @@ class Requests:
     def _get_cache_key(self, method, *args, **kwargs):
         def make_hashable(value):
             if isinstance(value, dict):
-                return frozenset((k, make_hashable(v)) for k, v in value.items() if k != "sessionId")
-            if isinstance(value, list):
-                return tuple(make_hashable(v) for v in value)
-            return value
+                return tuple(sorted((k, make_hashable(v)) for k, v in value.items() if k != "sessionId"))
+            if isinstance(value, (list, tuple, set, frozenset)):
+                return tuple(sorted(make_hashable(v) for v in value))
+            if isinstance(value, str):
+                return tuple(sorted(value.split(","))) if "," in value else value.strip()
+            if isinstance(value, bool):
+                return str(value).lower()
+            if value is None:
+                return "null"
+            return value if isinstance(value, (int, float)) else str(value)
 
-        url = args[0] if args else kwargs.get("url")
-        roblosecurity_cookies = [
-            cookie.value for cookie in self.session.cookies.jar if cookie.name == ".ROBLOSECURITY"]
-        user_id = str(
-            hash(roblosecurity_cookies[-1][-16:])) if roblosecurity_cookies else ""
-        return (method.lower(), url, frozenset((k, make_hashable(v)) for k, v in kwargs.items()), user_id)
+        url = kwargs.get("url", args[0] if args else None)
+        if not url:
+            raise ValueError("URL must be provided for cache key generation")
+
+        from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
+        parsed_url = urlparse(url)
+        normalized_url = urlunparse(parsed_url._replace(
+            query=urlencode(
+                sorted(parse_qsl(parsed_url.query, keep_blank_values=True)))
+        ))
+
+        sorted_kwargs = tuple((k, make_hashable(v))
+                              for k, v in sorted(kwargs.items()))
+
+        # Include auth cookie in cache key to separate cache per user
+        roblosecurity_cookies = [cookie.value for cookie in self.session.cookies.jar if cookie.name == ".ROBLOSECURITY"]
+        auth_cookie = roblosecurity_cookies[-1][-12:] if roblosecurity_cookies else ""
+        return hashlib.sha256(str((method.lower(), normalized_url, sorted_kwargs, auth_cookie)).encode()).hexdigest()
 
     def _get_disk_cache_path(self, cache_key) -> Path:
         """Generate a file path for disk cache based on cache key."""
@@ -127,7 +145,7 @@ class Requests:
             with open(cache_file, "rb") as f:
                 cached_data = pickle.load(f)
             return cached_data.get("response")
-        except (pickle.PickleError, OSError, KeyError):
+        except (pickle.PickleError, OSError, KeyError, EOFError):
             pass
 
         return None
@@ -187,12 +205,14 @@ class Requests:
         if disk_cache is not None:
             cache_key = self._get_cache_key(method, *args, **kwargs)
             cached_response = self._get_from_disk_cache(cache_key)
+            # print(
+            #     f"Disk cache {'hit' if cached_response is not None else 'miss'} for {method} {cache_key}", flush=True)
             if cached_response is not None:
                 def refresh_cache_thread():
                     import asyncio
                     try:
-                        print(
-                            f"Refreshing cache for {method} {cache_key}", flush=True)
+                        # print(
+                        #     f"Refreshing cache for {method} {cache_key}", flush=True)
                         loop = asyncio.new_event_loop()
                         asyncio.set_event_loop(loop)
                         fresh_response = loop.run_until_complete(

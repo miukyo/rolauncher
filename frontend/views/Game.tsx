@@ -257,6 +257,7 @@ export default function Game() {
 
   const handleJoin = ({ jobId, privateId }: { jobId?: string; privateId?: string }) => {
     if (!gameData) return;
+    NavStore.isLaunchingRoblox[1](true);
     pywebview.api.utility.launch_roblox(
       "Play",
       undefined,
@@ -264,7 +265,9 @@ export default function Game() {
       undefined,
       jobId ?? undefined,
       privateId ?? undefined
-    );
+    ).then(() => {
+      NavStore.isLaunchingRoblox[1](false);
+    });
   };
 
   return (
